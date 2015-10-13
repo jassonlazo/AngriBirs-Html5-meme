@@ -1,0 +1,383 @@
+<html>
+<head>
+<title>Sling shot ball</title>
+<script type="text/javascript" src="jquery-1.7.js"></script> 
+<script type="text/javascript">    
+
+	  var cwidth=900;//
+	  var cheight=500;
+	  var ctx;
+	  var canvas1;
+	  var everything=[];//所有绘制对象
+	  var tid;//定时事件表示符
+	  var timm;
+	  var startrockx=100;//开始位置X
+	  var startrocky=280;
+	  var ballradsq=100;//球面积
+	  var inmotion=false;	  
+	  var xspeed;
+	  var yvel1;//开始时垂直位移
+	  var yvel2;//结束时位移
+	  var gravity=2;	  
+	  var ballrad=10;	
+	  var targetw=150;
+	  var targeth=160;	
+	  var htargetw=162;//击中目标长宽
+	  var htargeth=143;
+	  var px;
+	  var py;
+	  var first=true;
+	  var nn=0;
+	  var tim=30;
+	  var wi=0;
+	  var testt;
+	  
+function Sling(bx,by,s1x,s1y,s2x,s2y,s3x,s3y,stylestring){
+              this.bx=bx;
+              this.by=by;
+              this.s1x=s1x;
+              this.s1y=s1y;
+              this.s2x=s2x;
+               this.s2y=s2y;
+              this.s3x=s3x;
+              this.s3y=s3y;
+             this.strokeStyle=stylestring;
+             this.draw=drawsling;
+             this.moveit=movesling;
+}
+function drawsling(){
+           ctx.strokeStyle=this.strokeStyle;
+           ctx.lineWidth=4;
+           ctx.beginPath();
+           ctx.moveTo(this.bx,this.by);//移到（bx，by）
+           ctx.lineTo(this.s1x,this.s1y);//链接2点
+           ctx.moveTo(this.bx,this.by);
+           ctx.lineTo(this.s2x,this.s2y);
+           ctx.moveTo(this.s1x,this.s1y);
+           ctx.lineTo(this.s2x,this.s2y);
+           ctx.lineTo(this.s3x,this.s3y);
+           ctx.stroke();
+}
+function movesling(dx,dy){
+         this.bx+=dx;
+		 this.by+=dy;
+		 this.s1x+=dx;
+		 this.s2x+=dx;
+		 this.s3x+=dx;
+		 this.s1y+=dy;
+		 this.s2y+=dy;
+		 this.s3y+=dy;
+		 }
+		 var mysling=new Sling(startrockx,startrocky,startrockx+80,startrocky-10
+		 ,startrockx+80,startrocky+10,startrockx+70,startrocky+150,"rgb(120,20,10)");
+		 
+        		   
+	 function moveball(dx,dy){
+	    this.dx+=dx;
+	    this.dy+=dy;
+	    }
+	    
+	    //画矩形
+	    function Myrectangle(sx,sy,swidth,sheight,stylestring){
+	       this.sx=sx;
+	       this.sy=sy;
+	       this.swidth=swidth;
+	       this.sheight=sheight;
+	       this.fill=stylestring;
+	       this.draw=drawrects;
+	       this.moveit=moveball;
+	       }
+	       function drawrects(){
+	          ctx.fillStyle=this.fill;
+	          ctx.fillRect(this.sx,this.sy,this.swidth,this.sheight);
+	          }
+		function Picture(sx,sy,swidth,sheight,dx,dy,dwidth,dheight,filen){//创建picture对象
+		        var imga =new Image();
+				imga.src=filen;
+				this.sx=sx;
+				this.sy=sy;
+				this.img=imga;
+				this.swidth=swidth;
+				this.sheight=sheight;
+				this.dx=dx;
+				this.dy=dy;
+				this.dwidth=dwidth;
+				this.dheight=dheight;
+				this.draw=drawAnImage;
+				this.moveit=moveball;
+				}
+				function drawAnImage(){
+				     ctx.drawImage(this.img,this.sx,this.sy,this.swidth,this.sheight,this.dx,this.dy,this.dwidth,this.dheight);
+					 }
+					 
+			  var win1=new Picture(0,0,324,240,0,0,648,480,"win1.png") ; 	
+			  var win2=new Picture(0,0,324,240,0,0,648,480,"win2.png") ;
+		      var lose1=new Picture(0,0,324,240,0,0,648,480,"lose1.png") ;
+			  var lose2=new Picture(0,0,324,240,0,0,648,480,"lose2.png") ;
+  		      var st=new Picture(0,0,325,240,0,0,650,480,"start.png");
+			  var cball=new Picture(0,0,140,157,startrockx,startrocky,20,20,"headboy.png");
+              var target =new Picture(0,0,198,187,700,340,60,60,"headgirl.png");
+              var htarget=new Picture(0,0,155,148,700,340,60,60,"headgirl1.png");
+	          var ground =new Picture(0,0,900,500,0,0,900,500,"ground.png");
+			  var meu=new Picture(0,0,899,459,0,0,899,459,"menu.png");
+			  var stbutton=new Picture(0,0,277,116,85,300,277,116,"stbutton.png");
+	          
+    
+	 function everyinit(){	
+    everything.splice(0,everything.length);
+    cball.dx=startrockx;
+    cball.dy=startrocky;
+	mysling.bx=startrockx;
+	mysling.by=startrocky;
+		
+	
+	everything.push(ground);
+	
+	everything.push(target);//将target放入everything
+	everything.push(cball);
+	everything.push(mysling);//指定初始值以支持大炮旋转
+}	     
+
+	
+function mouseMove(ev){ 
+      ev = ev || window.event; 
+var mousePos = mouseCoords(ev);
+   px= mousePos.x;
+   document.getElementById('xx').value=mousePos.x;
+   py= mousePos.y;
+   document.getElementById('yy').value=mousePos.y;
+} 
+
+function mouseCoords(ev)
+{
+if(ev.pageX || ev.pageY){
+return {x:ev.pageX, y:ev.pageY};
+}
+return{
+x:ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+y:ev.clientY + document.body.scrollTop - document.body.clientTop
+}; 
+} 
+  document.onmousemove = mouseMove;	
+   function start(){
+           canvas1=document.getElementById('canvas');//只得到canvas对象
+	   ctx=canvas1.getContext('2d');
+	   ctx.font="30px Arial";	
+	   st.draw();
+	   setTimeout(menu,1000);   
+	   canvas1.addEventListener('click',jump,false);
+			 }
+			 
+function menu(){
+         ctx.clearRect(0,0,cwidth,cheight);
+		 meu.draw();
+		 stbutton.draw();	
+		 testt=setInterval(test,100);
+		}
+
+function test(){	//开始菜单里
+         var mx=px;
+         var my=py;		 
+		 if((mx>=85)&&(mx<=362)&&(my>=300)&&(my<=416)){		 
+		      stbutton.dwidth=304;
+			  stbutton.dheight=127;
+			  stbutton.draw();
+			  nn=1;			 
+		}
+		else{		
+		     nn=0;
+			 stbutton.dwidth=277;
+			  stbutton.dheight=116;
+			  ctx.clearRect(85,300,304,127);
+			   meu.draw();
+			  stbutton.draw();
+			  
+			 }
+		}
+			 
+function init(){ 
+         
+         ctx.clearRect(0,0,cwidth,cheight);		 
+	   everyinit();
+	   canvas1.addEventListener('mousedown',findball,false);//鼠标点下事件
+	   canvas1.addEventListener('mousemove',moveit,false);//鼠标拖住移动事件
+	   canvas1.addEventListener('mouseup',finish,false);//鼠标松开事件    
+	  drawall();//绘制所有对象	
+	 
+	   }
+
+function jump(ev){
+      switch(nn){
+              case 1:
+			       nn=0;
+				   clearInterval(testt);
+				    timm=setInterval(function (){      
+		              tim--;
+					   
+		             },1000);
+                   init();
+              break;
+              case 2:
+			       nn=0;
+				   win();
+				   break;
+			   case 3:
+                   nn=0;
+                   lose();
+                   break;
+				   
+				   }
+}				   
+				   
+              			  
+	   
+function findball(ev){
+     var mx=px; 
+	var my=py; 
+	if((distsq(mx,my,cball.dx+10,cball.dy+10))<=ballradsq){//鼠标位于子弹上吗？distsq（）计算距离
+		       inmotion=true;
+			  
+			         drawall();
+					 }
+		}			 
+function distsq(x1,y1,x2,y2){
+          return (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);}
+function moveit(ev){
+           var mx=px; 
+	var my=py; 
+	  
+ 
+         if(inmotion){
+      
+			cball.dx=mx;
+            cball.dy=my;
+            mysling.bx=mx;
+            mysling.by=my;
+             drawall();}
+		}
+function finish(ev){
+ var mx=px; 
+	var my=py;
+        if(inmotion){
+		
+             inmotion=false;
+        var outofcanon=
+         distsq(mysling.bx,mysling.by,mysling.s1x,mysling.s1y)/500;//计算炮弹打出初始速度
+        var angleradians=-Math.atan2(mysling.s1y-mysling.by,mysling.s1x-mysling.bx);//通过反正切函数算角度
+        xspeed=outofcanon*Math.cos(angleradians);//算出炮弹水平速度
+	   
+	     yvel1=-outofcanon*Math.sin(angleradians);//垂直速度
+        drawall();
+		
+	    tid=setInterval(change,100);//每0.1秒绘一次	
+        		
+		}	  
+}	   
+
+	   function drawall(){
+	   ctx.clearRect(0,0,cwidth,cheight);		  
+	   var i;
+	      for(i=0;i<everything.length;i++){
+		       everything[i].draw();
+		}
+		ctx.clearRect(580,35,80,80);
+	    ctx.fillText(String(wi),580,60);
+		ctx.clearRect(215,35,80,80);
+		ctx.fillText(String(tim),215,60);
+			
+		
+		
+		document.getElementById('tt').value=String(tim);
+}		
+
+
+
+	 	 
+	   function change(){    
+	   	 var dx=xspeed;
+	   	 yvel2=yvel1+gravity;
+	   	 var dy=(yvel1+yvel2)*.5;
+	   	 yvel1=yvel2;
+	   	 cball.moveit(dx,dy);
+	   	 var bx=cball.dx;
+	   	 var by=cball.dy;
+		 if((wi==2)&&(tim>0)){
+		          clearInterval(timm); 
+				  clearInterval(tid);
+		         nn=2;
+		        }
+		else if(tim<=0){   
+                  clearInterval(timm);	
+clearInterval(tid);				  
+		          nn=3;	}
+        else{				  
+	   	 if((bx>=target.dx)&&(bx<=(target.dx+target.dwidth))//子弹水平打倒目标
+	   	 &&(by>=target.dy)&&(by<=target.dy+target.dheight))//垂直命中
+	   	 {
+		      
+		      wi++;
+			 
+	   	 	  clearInterval(tid);//如果是，停运动
+			 everything.splice(1,1,htarget);//删除target，插入htarget
+			drawall();
+			setTimeout(init,500);
+	   	 	 }
+			 
+	   	 if(by>=390){//子弹超出地面情况
+	   	   clearInterval(tid);
+		    setTimeout(init,500);
+	   	   }
+		    drawall();
+		   
+	   	}
+		
+		
+	   }
+
+
+   function win(){
+	       ctx.clearRect(0,0,cwidth,cheight);
+		   win1.draw();
+		   window.setTimeout(
+		     function (){
+		  ctx.clearRect(0,0,cwidth,cheight);
+		  win2.draw();},
+		  1500);
+		  setTimeout(
+		      function(){
+			  wi=0;
+			  tim=30;
+			  init();}
+			  ,3500);
+		 }
+	  
+   function lose(){
+           ctx.clearRect(0,0,cwidth,cheight);
+		  lose1.draw();
+		  window.setTimeout(
+		     function (){
+		  ctx.clearRect(0,0,cwidth,cheight);
+		  lose2.draw();},
+		  1500);
+		   setTimeout(
+		      function(){
+			   wi=0;
+			  tim=30;
+			  init();}
+			  ,3500); 
+		 }
+
+		   
+		   		
+	 </script>
+</head>
+<body onLoad="start();">
+<canvas id="canvas" width="900" height="500">
+</canvas>
+<br/>
+<input id="tt" name="tt" value=" "/>
+<input id="xx" name="xx" value=" "/>
+<input id="yy" name="yy" value=" "/>
+
+	</body>
+	</html>
